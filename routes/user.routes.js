@@ -48,18 +48,37 @@ router.post('/signup', (req, res) => {
 });
 
 ///// POST TO LOGIN
-router.post("/login", (req, res, next) => {
-  console.log(req.body);
+// router.post("/signin", (req, res, next) => {
+//   console.log(req.body);
+//
+//   let email;
+//   let password;
+//
+//   if(req.body.email && req.body.password) {
+//     email = req.body.email;
+//     password = req.body.password;
+//   }
+//
+//   req.db.collection('users').findOne({email}, (err, result) => {
+//     const user = result;
+//
+//     if(!user) {
+//        res.status(401).json({message: 'no such user found'});
+//        return next();
+//     }
+//
+//     if(user.password === req.body.password) {
+//       const payload = {id: user.id};
+//       const token = jwt.sign(payload, jwtOptions.secretOrKey);
+//       res.json({message: "ok", token: token});
+//     } else {
+//       res.status(401).json({message: 'passwords did not match'});
+//     }
+//   });
+// });
+router.post("/signin", (req, res, next) => {
 
-  let email;
-  let password;
-
-  if(req.body.email && req.body.password) {
-    email = req.body.email;
-    password = req.body.password;
-  }
-
-  req.db.collection('users').findOne({email}, (err, result) => {
+  req.db.collection('users').findOne({email: req.body.email}, (err, result) => {
     const user = result;
 
     if(!user) {
@@ -67,13 +86,15 @@ router.post("/login", (req, res, next) => {
        return next();
     }
 
-    if(user.password === req.body.password) {
-      const payload = {id: user.id};
-      const token = jwt.sign(payload, jwtOptions.secretOrKey);
-      res.json({message: "ok", token: token});
-    } else {
-      res.status(401).json({message: 'passwords did not match'});
-    }
+    bcrypt.compare(req.body.password, user.password, (err, result) => {
+      if(result) {
+        const payload = {id: user.id};
+        const token = jwt.sign(payload, jwtOptions.secretOrKey);
+        res.json({message: "ok", token: token});
+      } else {
+        res.status(401).json({message: 'passwords did not match'});
+      }
+    });
   });
 });
 
