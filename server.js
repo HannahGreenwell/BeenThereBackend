@@ -57,51 +57,53 @@ app.use(cors());
 
 
 ///// POST TO LOGIN
-app.post("/login", (req, res) => {
+app.post("/login", (req, res, next) => {
   console.log(req.body);
 
-  let name;
+  let email;
   let password;
 
-  if(req.body.name && req.body.password) {
-    name = req.body.name;
+  if(req.body.email && req.body.password) {
+    email = req.body.email;
     password = req.body.password;
   }
 
   // Replace with DB call
-  const user = users[_.findIndex(users, {name: name})];
+  // const user = users[_.findIndex(users, {name: name})];
 
-  // db.collection('users').findOne({email}, (err, result) => {
+  db.collection('users').findOne({email}, (err, result) => {
     // if(err) return console.warn(err);
 
-    // const user = result;
-    //
-    // if(!user) {
-    //   res.status(401).json({message: 'no such user found'});
-    // }
-    //
-    // if(user.password === req.body.password) {
-    //   const payload = {id: user.id};
-    //   const token = jwt.sign(payload, jwtOptions.secretOrKey);
-    //   res.json({message: "ok", token: token});
-    // } else {
-    //   res.status(401).json({message: 'passwords did not match'});
-    // }
-  // });
+    const user = result;
 
-  if(!user) {
-    res.status(401).json({message: 'no such user found'});
-  }
+    if(!user) {
+       res.status(401).json({message: 'no such user found'});
+       return next();
+    }
 
-  if(user.password === req.body.password) {
-    // from now on we'll identify the user by the id and the id
-    // is the only personalised value that goes into the token
-    const payload = {id: user.id};
-    const token = jwt.sign(payload, jwtOptions.secretOrKey);
-    res.json({message: "ok", token: token});
-  } else {
-    res.status(401).json({message: 'passwords did not match'});
-  }
+    // console.log(user.password, req.body.password);
+    if(user.password === req.body.password) {
+      const payload = {id: user.id};
+      const token = jwt.sign(payload, jwtOptions.secretOrKey);
+      res.json({message: "ok", token: token});
+    } else {
+      res.status(401).json({message: 'passwords did not match'});
+    }
+  });
+
+  // if(!user) {
+  //   res.status(401).json({message: 'no such user found'});
+  // }
+  //
+  // if(user.password === req.body.password) {
+  //   // from now on we'll identify the user by the id and the id
+  //   // is the only personalised value that goes into the token
+  //   const payload = {id: user.id};
+  //   const token = jwt.sign(payload, jwtOptions.secretOrKey);
+  //   res.json({message: "ok", token: token});
+  // } else {
+  //   res.status(401).json({message: 'passwords did not match'});
+  // }
 });
 
 app.get("/secret", passport.authenticate('jwt', {session: false}), function(req, res) {
