@@ -66,6 +66,7 @@ router.post("/signin", (req, res, next) => {
 });
 
 const auth = (req, res, next) => {
+  console.log('AUTH:', req.headers['authorization'])
   const header = req.headers['authorization'];
 
   if(typeof header !== 'undefined') {
@@ -103,7 +104,16 @@ router.get('/data', auth, (req, res) => {
 });
 
 router.get('/beenthere', auth, (req, res) => {
-  res.json(req.current_user);
+  res.json(req.current_user.beenThereMap);
 });
+
+// app.get('/beenthere/:id', (req, res) => {
+//   const {id} = req.params;
+//
+//   db.collection('users').findOne({user_id: parseInt(id)}, (err, result) => {
+//     if(err) return console.warn(err);
+//     res.json(result.beenThereMap);
+//   });
+// });
 
 module.exports = router;
