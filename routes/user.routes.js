@@ -2,30 +2,9 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const passport = require('passport');
+const ObjectId = require('mongodb').ObjectID;
 
-const passportJWT = require('passport-jwt');
-
-///// Passport JWT Strategy
-const ExtractJwt = passportJWT.ExtractJwt;
-const JwtStrategy = passportJWT.Strategy;
-
-let jwtOptions = {};
-jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-jwtOptions.secretOrKey = process.env.JWT_SECRET;
-
-///// ????
-const strategy = new JwtStrategy(jwtOptions, (jwt_payload, next) => {
-  console.log('payload received', jwt_payload);
-  const user = users[_.findIndex(users, {id: jwt_payload.id})];
-  if(user) {
-    next(null, user);
-  } else {
-    next(null, false);
-  }
-});
-
-passport.use(strategy);
+const SECRET = process.env.JWT_SECRET;
 
 ///// POST TO SIGNUP
 router.post('/signup', (req, res) => {
@@ -54,10 +33,6 @@ router.post('/signup', (req, res) => {
 
 ///// POST TO SIGNIN
 router.post("/signin", (req, res, next) => {
-  // Checks that the user has filled in all fields
-  if(!req.body.email || !req.body.password) {
-    return res.status(400).json({message: 'Please fill out all fields.'});
-  }
 
   req.db.collection('users').findOne({email: req.body.email}, (err, result) => {
     const user = result;
@@ -71,15 +46,64 @@ router.post("/signin", (req, res, next) => {
     bcrypt.compare(req.body.password, user.password, (err, result) => {
       if(result) {
         // Handle good credentials
-        const payload = {id: user.id};
-        const token = jwt.sign(payload, jwtOptions.secretOrKey);
-        res.json({message: "ok", token: token});
+        jwt.sign(
+          {_id: user._id},
+          SECRET,
+          {expiresIn: '1h'},
+          (err, token) => {
+            if(err) {
+              console.warn(err);
+            } else {
+              res.json({message: "Success", token: token});
+            }
+          })
       } else {
         // Handle incorrect password
         res.status(401).json({message: 'passwords did not match'});
       }
     });
   });
+});
+
+const auth = (req, res, next) => {
+  const header = req.headers['authorization'];
+
+  if(typeof header !== 'undefined') {
+    const bearer = header.split(' ');
+    const token = bearer[1];
+
+    req.token = token;
+
+    // verify the JWT generated for the user
+    jwt.verify(req.token, SECRET, (err, authorizedData) => {
+      if( err ){
+        return res.status(403).json({message: 'Please sign-in to access the requested content.'});
+      } else {
+        // If token is successfully verified, use it to find the logged-in user in the DB,
+        // set that user into req.current_user, and run the actual route handler by calling next()
+        req.db.collection('users').findOne({_id: ObjectId(authorizedData._id)}, (err, result) => {
+
+          if(err) return res.status(404).json({message: 'User not found (token error).'});
+
+          req.current_user = result;
+          next();
+        });
+      }
+    });
+
+  } else {
+    return res.status(403).json({message: 'access denied'});  // No auth header present
+  }
+}
+
+
+///// GET TO PROTECTED ROUTE
+router.get('/data', auth, (req, res) => {
+  res.json({data: 'heres ya data', user: req.current_user});
+});
+
+router.get('/beenthere', auth, (req, res) => {
+  res.json(req.current_user);
 });
 
 module.exports = router;

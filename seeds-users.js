@@ -3,7 +3,7 @@
     'user_id': 1,
     'name': 'Hannah Greenwell',
     'email': 'hannah.greenwell@gmail.com',
-    'password': 'chicken',
+    'password': '$2b$10$k65dIBwl5ZGFYV65/qOoF.YyadbYAPZQ0htqSht/ld/zhJzFtBZVu',
     'friends': [2, 3],
 
     'beenThereMap': [
