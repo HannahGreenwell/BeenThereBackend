@@ -99,21 +99,26 @@ const auth = (req, res, next) => {
 
 
 ///// GET TO PROTECTED ROUTE
-router.get('/data', auth, (req, res) => {
-  res.json({data: 'heres ya data', user: req.current_user});
-});
+// router.get('/data', auth, (req, res) => {
+//   res.json({data: 'heres ya data', user: req.current_user});
+// });
 
 router.get('/beenthere', auth, (req, res) => {
-  res.json(req.current_user.beenThereMap);
-});
+  const mapData = req.current_user.beenThereMap;
+  let pins = [];
 
-// app.get('/beenthere/:id', (req, res) => {
-//   const {id} = req.params;
-//
-//   db.collection('users').findOne({user_id: parseInt(id)}, (err, result) => {
-//     if(err) return console.warn(err);
-//     res.json(result.beenThereMap);
-//   });
-// });
+  mapData.forEach(city => {
+    city.pins.forEach(pin => {
+      pins.push({
+        city: city.city,
+        name: pin.name,
+        lat: pin.lat,
+        lng: pin.lng
+      });
+    });
+  });
+
+  res.json(pins);
+});
 
 module.exports = router;
