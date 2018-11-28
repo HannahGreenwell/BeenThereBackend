@@ -8,6 +8,9 @@ const passport = require('passport');
 const mongoExpress = require('express-mongo-db');
 app.use(mongoExpress('mongodb://127.0.0.1:27017/been-there-test'));
 
+app.use(mongoExpress(`mongodb://${process.env.MLAB_DB_USER}:${process.env.MLAB_DB_PASSWORD}@ds221990.mlab.com:21990/been-there-test`));
+
+
 const user = require('./routes/user.routes');
 
 app.use(passport.initialize());
