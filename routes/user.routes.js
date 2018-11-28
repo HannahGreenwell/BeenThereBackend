@@ -49,7 +49,7 @@ router.post("/signin", (req, res, next) => {
         jwt.sign(
           {_id: user._id},
           SECRET,
-          {expiresIn: '1h'},
+          {expiresIn: '22h'},
           (err, token) => {
             if(err) {
               console.warn(err);
@@ -66,7 +66,7 @@ router.post("/signin", (req, res, next) => {
 });
 
 const auth = (req, res, next) => {
-  console.log('AUTH:', req.headers['authorization'])
+  // console.log('AUTH:', req.headers['authorization'])
   const header = req.headers['authorization'];
 
   if(typeof header !== 'undefined') {
@@ -99,9 +99,6 @@ const auth = (req, res, next) => {
 
 
 ///// GET TO PROTECTED ROUTE
-// router.get('/data', auth, (req, res) => {
-//   res.json({data: 'heres ya data', user: req.current_user});
-// });
 
 router.get('/beenthere', auth, (req, res) => {
   const mapData = req.current_user.beenThereMap;
@@ -119,6 +116,16 @@ router.get('/beenthere', auth, (req, res) => {
   });
 
   res.json(pins);
+});
+
+router.get('/pin/:city/:name', auth, (req, res) => {
+  const {city, name} = req.params;
+
+  const mapData = req.current_user.beenThereMap;
+  const cityData = mapData.find(c => c.city === city);
+  const pin = cityData.pins.find(pin => pin.name === name);
+
+  res.json(pin);
 });
 
 module.exports = router;

@@ -16,6 +16,8 @@ app.use(express.urlencoded());
 app.use(cors());
 app.use('/user', user);
 
+app.use(express.static('public'));
+
 app.get("/secret", passport.authenticate('jwt', {session: false}), function(req, res) {
   res.json("Success! You can not see this without a token");
 });
