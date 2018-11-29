@@ -16,12 +16,12 @@ router.post('/signup', (req, res) => {
   bcrypt.hash(req.body.password, 10, (err, hash) => {
     if(err) {
       return res.status(500).json({
-        error: err
+        message: err
       });
     } else {
       req.db.collection('users').insert({email: req.body.email, password: hash}, (err, result) => {
         if(err) {
-          return res.status(500).json({error: err});
+          return res.status(500).json({message: err});
         } else {
           console.log(result);
           res.status(200).json({succes: 'New user has been created'});
@@ -39,7 +39,7 @@ router.post("/signin", (req, res, next) => {
 
     // Checks that the email address exists in the DB
     if(!user) {
-       res.status(401).json({message: 'no such user found'});
+       res.status(401).json({message: 'Please check your email and password.'});
        return next();
     }
 
@@ -59,7 +59,7 @@ router.post("/signin", (req, res, next) => {
           })
       } else {
         // Handle incorrect password
-        res.status(401).json({message: 'passwords did not match'});
+        res.status(401).json({message: 'Please check your email and password.'});
       }
     });
   });
@@ -134,6 +134,7 @@ router.get('/pin/:city/:name', auth, (req, res) => {
 ///// POST TO CREATE A NEW PIN
 router.post('/pin', auth, (req, res) => {
   console.log(req.body);
+
   const {name, category, description, images, lat, lng, city} = req.body;
   const userData = req.current_user;
 
@@ -167,7 +168,17 @@ router.post('/pin', auth, (req, res) => {
       if(err) {
         return res.json({error: err});
       } else {
-        res.json({status: "ok", result});
+        res.json(
+          {
+            newPin,
+            pinToPush: {
+              city,
+              name,
+              lat,
+              lng
+            }
+          }
+        );
       }
     }
   )
