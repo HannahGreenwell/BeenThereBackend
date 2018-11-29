@@ -13,11 +13,10 @@ router.post('/signup', (req, res) => {
     return res.status(400).json({message: 'Please fill out all fields.'});
   }
 
+  // Create hashed password
   bcrypt.hash(req.body.password, 10, (err, hash) => {
     if(err) {
-      return res.status(500).json({
-        message: err
-      });
+      return res.status(500).json({message: err});
     } else {
       req.db.collection('users').insert({email: req.body.email, password: hash}, (err, result) => {
         if(err) {
@@ -65,8 +64,9 @@ router.post("/signin", (req, res, next) => {
   });
 });
 
+// Check authorization before accessing protected routes
 const auth = (req, res, next) => {
-  // console.log('AUTH:', req.headers['authorization'])
+
   const header = req.headers['authorization'];
 
   if(typeof header !== 'undefined') {
@@ -77,14 +77,16 @@ const auth = (req, res, next) => {
 
     // verify the JWT generated for the user
     jwt.verify(req.token, SECRET, (err, authorizedData) => {
-      if( err ){
-        return res.status(403).json({message: 'Please sign-in to access the requested content.'});
+
+      // Handle token that can't be verified
+      if(err){
+        return res.status(403).json({message: 'Please login to access that page'});
       } else {
-        // If token is successfully verified, use it to find the logged-in user in the DB,
-        // set that user into req.current_user, and run the actual route handler by calling next()
+        // If token is successfully verified, use token to find the logged-in user
+        // Set the user into req.current_user, and run the actual route handler by calling next()
         req.db.collection('users').findOne({_id: ObjectId(authorizedData._id)}, (err, result) => {
 
-          if(err) return res.status(404).json({message: 'User not found (token error).'});
+          if(err) return res.status(404).json({message: 'User not found'});
 
           req.current_user = result;
           next();
@@ -93,16 +95,12 @@ const auth = (req, res, next) => {
     });
 
   } else {
-    return res.status(403).json({message: 'access denied'});  // No auth header present
+    return res.status(403).json({message: 'access denied'});  // Handle requests with no auth header
   }
 }
 
 
 ///// PROTECTED ROUTES
-router.get('/data', auth, (req, res) => {
-  res.json(req.current_user);
-});
-
 router.get('/beenthere', auth, (req, res) => {
   const mapData = req.current_user.beenThereMap;
   let pins = [];
@@ -183,5 +181,9 @@ router.post('/pin', auth, (req, res) => {
     }
   )
 });
+
+// router.get('/data', auth, (req, res) => {
+//   res.json(req.current_user);
+// });
 
 module.exports = router;
