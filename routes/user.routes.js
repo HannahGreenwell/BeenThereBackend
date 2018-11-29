@@ -98,7 +98,10 @@ const auth = (req, res, next) => {
 }
 
 
-///// GET TO PROTECTED ROUTE
+///// PROTECTED ROUTES
+router.get('/data', auth, (req, res) => {
+  res.json(req.current_user);
+});
 
 router.get('/beenthere', auth, (req, res) => {
   const mapData = req.current_user.beenThereMap;
@@ -126,6 +129,48 @@ router.get('/pin/:city/:name', auth, (req, res) => {
   const pin = cityData.pins.find(pin => pin.name === name);
 
   res.json(pin);
+});
+
+///// POST TO CREATE A NEW PIN
+router.post('/pin', auth, (req, res) => {
+  console.log(req.body);
+  const {name, category, description, images, lat, lng, city} = req.body;
+  const userData = req.current_user;
+
+  const cityData = userData.beenThereMap.find(c => c.city === city);
+
+  const newPin = {
+    name,
+    description,
+    category,
+    images,
+    lat,
+    lng
+  };
+
+  if(cityData) {
+    cityData.pins.push(newPin);
+  } else {
+    userData.beenThereMap.push(
+      {
+        city,
+        pins: [newPin]
+      }
+    );
+  }
+
+  req.db.collection('users').updateOne(
+    {_id: userData._id},
+    userData,
+    {upsert: true},
+    (err, result) => {
+      if(err) {
+        return res.json({error: err});
+      } else {
+        res.json({status: "ok", result});
+      }
+    }
+  )
 });
 
 module.exports = router;
