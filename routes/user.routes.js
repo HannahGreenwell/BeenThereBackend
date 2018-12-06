@@ -16,14 +16,26 @@ router.post('/signup', (req, res) => {
   // Create hashed password
   bcrypt.hash(req.body.password, 10, (err, hash) => {
     if(err) {
-      return res.status(500).json({message: err});
+      return res.status(500).json({message: 'Sorry an error occurred. Please try again.'});
     } else {
+      // Add new user to the DB
       req.db.collection('users').insert({email: req.body.email, password: hash}, (err, result) => {
         if(err) {
-          return res.status(500).json({message: err});
+          return res.status(500).json({message: 'Sorry an error occurred. Please try again.'});
         } else {
-          console.log(result);
-          res.status(200).json({succes: 'New user has been created'});
+          // Create and return JWT for successful sign-ups
+          jwt.sign(
+            {_id: result.ops[0]._id},
+            SECRET,
+            {expiresIn: '22h'},
+            (err, token) => {
+              if(err) {
+                console.warn(err);
+              } else {
+                res.json({message: "Success", token: token});
+              }
+            }
+          );
         }
       });
     }
@@ -33,18 +45,20 @@ router.post('/signup', (req, res) => {
 ///// POST TO SIGNIN
 router.post("/signin", (req, res, next) => {
 
+  // Find the correct user using the email address provided
   req.db.collection('users').findOne({email: req.body.email}, (err, result) => {
     const user = result;
 
-    // Checks that the email address exists in the DB
+    // Check that the email address exists in the DB
     if(!user) {
        res.status(401).json({message: 'Please check your email and password.'});
        return next();
     }
 
+    // Compare the password provided with the user's hashed password
     bcrypt.compare(req.body.password, user.password, (err, result) => {
       if(result) {
-        // Handle good credentials
+        // Handle correct password
         jwt.sign(
           {_id: user._id},
           SECRET,
@@ -69,16 +83,17 @@ const auth = (req, res, next) => {
 
   const header = req.headers['authorization'];
 
+  // Check that authorization header exists
   if(typeof header !== 'undefined') {
     const bearer = header.split(' ');
     const token = bearer[1];
 
     req.token = token;
 
-    // verify the JWT generated for the user
+    // Verify the JWT generated for the user
     jwt.verify(req.token, SECRET, (err, authorizedData) => {
 
-      // Handle token that can't be verified
+      // Handle token that can't be verified (e.g. expired token)
       if(err){
         return res.status(403).json({message: 'Please login to access that page'});
       } else {
@@ -93,9 +108,9 @@ const auth = (req, res, next) => {
         });
       }
     });
-
   } else {
-    return res.status(403).json({message: 'access denied'});  // Handle requests with no auth header
+    // Handle requests with no authorization header
+    return res.status(403).json({message: 'Access Denied'});
   }
 }
 
@@ -105,16 +120,19 @@ router.get('/beenthere', auth, (req, res) => {
   const mapData = req.current_user.beenThereMap;
   let pins = [];
 
-  mapData.forEach(city => {
-    city.pins.forEach(pin => {
-      pins.push({
-        city: city.city,
-        name: pin.name,
-        lat: pin.lat,
-        lng: pin.lng
+  // Avoid errors for users who do not have any map data
+  if(mapData) {
+    mapData.forEach(city => {
+      city.pins.forEach(pin => {
+        pins.push({
+          city: city.city,
+          name: pin.name,
+          lat: pin.lat,
+          lng: pin.lng
+        });
       });
     });
-  });
+  }
 
   res.json(pins);
 });
@@ -123,7 +141,11 @@ router.get('/pin/:city/:name', auth, (req, res) => {
   const {city, name} = req.params;
 
   const mapData = req.current_user.beenThereMap;
+
+  // Find the correct city object within the map data
   const cityData = mapData.find(c => c.city === city);
+
+  // Find the correct pin object within the city object
   const pin = cityData.pins.find(pin => pin.name === name);
 
   res.json(pin);
@@ -136,8 +158,10 @@ router.post('/pin', auth, (req, res) => {
   const {name, category, description, images, lat, lng, city} = req.body;
   const userData = req.current_user;
 
+  // Find the correct city object within the map data
   const cityData = userData.beenThereMap.find(c => c.city === city);
 
+  // Create a new pin object using the user input
   const newPin = {
     name,
     description,
@@ -147,9 +171,12 @@ router.post('/pin', auth, (req, res) => {
     lng
   };
 
+  // Check whether the city already exists within the user's map data
   if(cityData) {
+    // Add the new pin to the existing city object
     cityData.pins.push(newPin);
   } else {
+    // Add a new city object including the new pin to user's map data
     userData.beenThereMap.push(
       {
         city,
@@ -158,6 +185,7 @@ router.post('/pin', auth, (req, res) => {
     );
   }
 
+  // Update the user's document
   req.db.collection('users').updateOne(
     {_id: userData._id},
     userData,
@@ -182,8 +210,26 @@ router.post('/pin', auth, (req, res) => {
   )
 });
 
-// router.get('/data', auth, (req, res) => {
-//   res.json(req.current_user);
+///// SHOW CITY SEARCH RESULTS
+// app.get('/search/:city', (req, res) => {
+//   const {city} = req.params;
+//
+//   // Get array of current user's friends
+//   db.collection('users').findOne({user_id: 1}, (err, result) => {
+//     if(err) return console.warn(err);
+//     const friends = result.friends;
+//
+//     // Get friends who have been to the query city
+//     db.collection('users').find(
+//       {
+//         user_id: {$in: friends},
+//         "beenThereMap.city": city
+//       })
+//       .toArray((err, results) => {
+//       if(err) return console.warn(err);
+//       res.json(results);
+//     });
+//   });
 // });
 
 module.exports = router;
