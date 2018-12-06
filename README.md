@@ -1,4 +1,4 @@
-# Project#3: Been There (Front-End)
+# Project#3: Been There (Back-End)
 
 Skip the reading and go straight to a live version of the site here: [https://been-there-done-that.herokuapp.com./#/login](https://been-there-done-that.herokuapp.com./#/login)
 
