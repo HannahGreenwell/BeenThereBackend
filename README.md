@@ -17,7 +17,7 @@ Been There is a map based app for people who are bursting with travel recommenda
 - Express
 - MongoDB
 
-### Front-End Packages & APIs
+### Back-End Packages & APIs
 - bcrypt
 - cors
 - jsonwebtoken
