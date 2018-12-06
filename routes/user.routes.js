@@ -158,9 +158,6 @@ router.post('/pin', auth, (req, res) => {
   const {name, category, description, images, lat, lng, city} = req.body;
   const userData = req.current_user;
 
-  // Find the correct city object within the map data
-  const cityData = userData.beenThereMap.find(c => c.city === city);
-
   // Create a new pin object using the user input
   const newPin = {
     name,
@@ -171,19 +168,29 @@ router.post('/pin', auth, (req, res) => {
     lng
   };
 
-  // Check whether the city already exists within the user's map data
-  if(cityData) {
-    // Add the new pin to the existing city object
-    cityData.pins.push(newPin);
+  // Check whether the user has a map object in their document
+  if(userData.beenThereMap) {
+    // Find the correct city object within the map data
+    const cityData = userData.beenThereMap.find(c => c.city === city);
+
+    // Check whether the city already exists within the user's map data
+    if(cityData) {
+      // Add the new pin to the existing city object
+      cityData.pins.push(newPin);
+    } else {
+      // Add a new city object including the new pin to user's map data
+      userData.beenThereMap.push(
+        {
+          city,
+          pins: [newPin]
+        }
+      );
+    }
   } else {
-    // Add a new city object including the new pin to user's map data
-    userData.beenThereMap.push(
-      {
-        city,
-        pins: [newPin]
-      }
-    );
+    // Add a map object, city object and pin object to new user's document
+    userData.beenThereMap = [newPin];
   }
+
 
   // Update the user's document
   req.db.collection('users').updateOne(

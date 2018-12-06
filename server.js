@@ -24,11 +24,7 @@ app.use(cors());
 app.use('/user', user);
 
 app.use(express.static('public'));
-// app.use(passport.initialize());
 
-// app.get("/secret", passport.authenticate('jwt', {session: false}), function(req, res) {
-//   res.json("Success! You can not see this without a token");
-// });
 
 ///// START SERVER
 const server = app.listen(process.env.PORT || 3000, () => {
