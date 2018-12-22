@@ -2,9 +2,29 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const cloudinary = require('cloudinary');
+const cloudinaryStorage = require('multer-storage-cloudinary');
 const ObjectId = require('mongodb').ObjectID;
 
 const SECRET = process.env.JWT_SECRET;
+
+// https://medium.freecodecamp.org/how-to-allow-users-to-upload-images-with-node-express-mongoose-and-cloudinary-84cefbdff1d9
+///// CLOUDINARY SET-UP
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const storage = cloudinaryStorage({
+  cloudinary: cloudinary,
+  folder: "demo",
+  allowedFormats: ["jpg", "png"],
+  transformation: [{width: 500, height: 500, crop: "limit"}]
+});
+
+const parser = multer({storage: storage});
 
 ///// POST TO SIGNUP
 router.post('/signup', (req, res) => {
@@ -170,10 +190,13 @@ router.get('/pin/:city/:name', auth, (req, res) => {
 });
 
 ///// POST TO CREATE A NEW PIN
-router.post('/pin', auth, (req, res) => {
+router.post('/pin', auth, parser.single('image'), (req, res) => {
+  // Get uploaded image url from req.file
+  const images = req.file.url;
   // Get form inputs from req.body
-  const {name, category, description, images, lat, lng, city} = req.body;
-
+  const {name, category, description, city} = req.body;
+  const lat = parseFloat(req.body.lat);
+  const lng = parseFloat(req.body.lng);
   // Get the full user document from req.current_user
   const userData = req.current_user;
 
@@ -184,7 +207,7 @@ router.post('/pin', auth, (req, res) => {
     category,
     images,
     lat,
-    lng
+    lng,
   };
 
   // Check whether the user has a map object in their document
@@ -209,7 +232,6 @@ router.post('/pin', auth, (req, res) => {
     // If the user does not have a map object, add a map object, city object and pin object their document
     userData.beenThereMap = [newPin];
   }
-
 
   // Update the user's document
   req.db.collection('users').updateOne(
