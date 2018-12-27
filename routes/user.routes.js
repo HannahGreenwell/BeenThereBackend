@@ -192,7 +192,9 @@ router.get('/pin/:city/:name', auth, (req, res) => {
 ///// POST TO CREATE A NEW PIN
 router.post('/pin', auth, parser.single('image'), (req, res) => {
   // Get uploaded image url from req.file
-  const images = req.file.url;
+  console.log(req.body);
+  console.log(req.file);
+  const image = req.file.url;
   // Get form inputs from req.body
   const {name, category, description, city} = req.body;
   const lat = parseFloat(req.body.lat);
@@ -205,7 +207,7 @@ router.post('/pin', auth, parser.single('image'), (req, res) => {
     name,
     description,
     category,
-    images,
+    image,
     lat,
     lng,
   };
