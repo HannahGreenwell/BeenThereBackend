@@ -27,7 +27,7 @@ const storage = cloudinaryStorage({
 
 const parser = multer({storage: storage});
 
-///// POST TO SIGNUP
+// SIGN-UP
 router.post('/signup', (req, res) => {
   // Checks that the user has filled in all fields
   if(!req.body.email || !req.body.password) {
@@ -42,7 +42,7 @@ router.post('/signup', (req, res) => {
       return res.status(500).json({message: 'Sorry an error occurred. Please try again.'});
     } else {
       // Add the new user to the DB
-      req.db.collection('users').insert({email: req.body.email, password: hash}, (err, result) => {
+      req.db.collection('users').insert({email: req.body.email, password: hash, places:[]}, (err, result) => {
         if(err) {
           // If an error occurs during insertion, return status 500 and error msg
           return res.status(500).json({message: 'Sorry an error occurred. Please try again.'});
@@ -70,7 +70,7 @@ router.post('/signup', (req, res) => {
   })
 });
 
-///// POST TO SIGNIN
+// SIGN-IN
 router.post("/signin", (req, res, next) => {
 
   // Find the correct user using the email address provided
@@ -108,7 +108,7 @@ router.post("/signin", (req, res, next) => {
 });
 
 ///// PROTECTED ROUTES
-// GET USER'S SAVED PLACES
+// GET USER'S PLACES
 router.get('/map', auth, (req, res) => {
   // Get the user's map data from req.current_user
   let {places} = req.current_user;
@@ -122,7 +122,7 @@ router.get('/map', auth, (req, res) => {
   res.json(places);
 });
 
-///// POST TO CREATE A NEW PIN
+// CREATE A NEW PLACE
 router.post('/place', auth, parser.single('image'), (req, res) => {
   // Get uploaded image url from req.file
   const image = req.file.url;
@@ -157,9 +157,24 @@ router.post('/place', auth, parser.single('image'), (req, res) => {
   );
 });
 
-router.delete('/pin/:name', auth, (req, res) => {
-  console.log('Request ', req.params);
-  res.json({"status": "ok"});
+// DELETE A PLACE
+router.delete('/place/:lat/:lng', auth, (req, res) => {
+  // Get the selected place's lat and lng from req.params
+  const lat = parseFloat(req.params.lat);
+  const lng = parseFloat(req.params.lng);
+
+  // Delete the selected place from the user's places array
+  req.db.collection('users').updateOne(
+    {_id: req.current_user._id},
+    {$pull: {places: {lat: lat, lng: lng}}},
+    (err, result) => {
+      if (err) {
+        res.json({error: err});
+      } else {
+        res.json(req.current_user.places);
+      }
+    }
+  );
 });
 
 module.exports = router;
