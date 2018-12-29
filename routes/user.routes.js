@@ -123,20 +123,16 @@ router.get('/map', auth, (req, res) => {
 });
 
 ///// POST TO CREATE A NEW PIN
-router.post('/pin', auth, parser.single('image'), (req, res) => {
+router.post('/place', auth, parser.single('image'), (req, res) => {
   // Get uploaded image url from req.file
-  console.log(req.body);
-  console.log(req.file);
   const image = req.file.url;
   // Get form inputs from req.body
-  const {name, category, description, city} = req.body;
+  const {name, category, description} = req.body;
   const lat = parseFloat(req.body.lat);
   const lng = parseFloat(req.body.lng);
-  // Get the full user document from req.current_user
-  const userData = req.current_user;
 
   // Create a new pin object using the form input
-  const newPin = {
+  const newPlace = {
     name,
     description,
     category,
@@ -145,83 +141,25 @@ router.post('/pin', auth, parser.single('image'), (req, res) => {
     lng,
   };
 
-  // Check whether the user has a map object in their document
-  if(userData.beenThereMap) {
-    // Find the correct city object within the map data
-    const cityData = userData.beenThereMap.find(c => c.city === city);
-
-    // Check whether the city already exists within the user's map data
-    if(cityData) {
-      // If the city already exists, add the new pin to the city object
-      cityData.pins.push(newPin);
-    } else {
-      // If the city does not exist, add a new city object including the new pin to user's map data
-      userData.beenThereMap.push(
-        {
-          city,
-          pins: [newPin]
-        }
-      );
-    }
-  } else {
-    // If the user does not have a map object, add a map object, city object and pin object their document
-    userData.beenThereMap = [newPin];
-  }
-
   // Update the user's document
   req.db.collection('users').updateOne(
     // Find the correct document by _id
-    {_id: userData._id},
-    // Update the document with the userData
-    userData,
-    {upsert: true},
+    {_id: req.current_user._id},
+    // Push the new place object onto the user's places array
+    {$push: {places: newPlace}},
     (err, result) => {
       if(err) {
-        // If an error occurs during the update, return the error
         return res.json({error: err});
       } else {
-        // If the update was successful, return the new pin and the new pin's details
-        res.json(
-          {
-            newPin,
-            pinToPush: {
-              city,
-              name,
-              lat,
-              lng
-            }
-          }
-        );
+        res.json(newPlace);
       }
     }
-  )
+  );
 });
 
 router.delete('/pin/:name', auth, (req, res) => {
   console.log('Request ', req.params);
   res.json({"status": "ok"});
 });
-
-///// SHOW CITY SEARCH RESULTS
-// app.get('/search/:city', (req, res) => {
-//   const {city} = req.params;
-//
-//   // Get array of current user's friends
-//   db.collection('users').findOne({user_id: 1}, (err, result) => {
-//     if(err) return console.warn(err);
-//     const friends = result.friends;
-//
-//     // Get friends who have been to the query city
-//     db.collection('users').find(
-//       {
-//         user_id: {$in: friends},
-//         "beenThereMap.city": city
-//       })
-//       .toArray((err, results) => {
-//       if(err) return console.warn(err);
-//       res.json(results);
-//     });
-//   });
-// });
 
 module.exports = router;
