@@ -122,20 +122,6 @@ router.get('/map', auth, (req, res) => {
   res.json(places);
 });
 
-// GET CLICKED PIN'S DETAILS
-// router.get('/place/:lat/:lng', auth, (req, res) => {
-//   // Get the selected city and place name from params
-//   const {lat, lng} = req.params;
-//   // Get the user's map data from req.current_user
-//   const {map} = req.current_user.map;
-//
-//   // Find the correct pin object within the city object
-//   const place = map.find(place => place. === name);
-//
-//   // Return the clicked pin object
-//   res.json(pin);
-// });
-
 ///// POST TO CREATE A NEW PIN
 router.post('/pin', auth, parser.single('image'), (req, res) => {
   // Get uploaded image url from req.file
