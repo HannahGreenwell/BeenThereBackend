@@ -109,46 +109,32 @@ router.post("/signin", (req, res, next) => {
 
 ///// PROTECTED ROUTES
 // GET USER'S SAVED PLACES
-router.get('/beenthere', auth, (req, res) => {
+router.get('/map', auth, (req, res) => {
   // Get the user's map data from req.current_user
-  const mapData = req.current_user.beenThereMap;
-  let pins = [];
+  let {places} = req.current_user;
 
-  // Avoid errors for users who do not have any map data
-  if(mapData) {
-    mapData.forEach(city => {
-      city.pins.forEach(pin => {
-        pins.push({
-          city: city.city,
-          name: pin.name,
-          lat: pin.lat,
-          lng: pin.lng
-        });
-      });
-    });
+  // Send an empty array back to user's with no map data
+  if (!places) {
+    places = [];
   }
 
   // Return an array of the pins (or an empty array if the user has no pins)
-  res.json(pins);
+  res.json(places);
 });
 
 // GET CLICKED PIN'S DETAILS
-router.get('/pin/:city/:name', auth, (req, res) => {
-  // Get the selected city and place name from params
-  const {city, name} = req.params;
-
-  // Get the user's map data from req.current_user
-  const mapData = req.current_user.beenThereMap;
-
-  // Find the correct city object within the map data
-  const cityData = mapData.find(c => c.city === city);
-
-  // Find the correct pin object within the city object
-  const pin = cityData.pins.find(pin => pin.name === name);
-
-  // Return the clicked pin object
-  res.json(pin);
-});
+// router.get('/place/:lat/:lng', auth, (req, res) => {
+//   // Get the selected city and place name from params
+//   const {lat, lng} = req.params;
+//   // Get the user's map data from req.current_user
+//   const {map} = req.current_user.map;
+//
+//   // Find the correct pin object within the city object
+//   const place = map.find(place => place. === name);
+//
+//   // Return the clicked pin object
+//   res.json(pin);
+// });
 
 ///// POST TO CREATE A NEW PIN
 router.post('/pin', auth, parser.single('image'), (req, res) => {
@@ -223,6 +209,11 @@ router.post('/pin', auth, parser.single('image'), (req, res) => {
       }
     }
   )
+});
+
+router.delete('/pin/:name', auth, (req, res) => {
+  console.log('Request ', req.params);
+  res.json({"status": "ok"});
 });
 
 ///// SHOW CITY SEARCH RESULTS
