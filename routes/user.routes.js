@@ -164,14 +164,15 @@ router.delete('/place/:lat/:lng', auth, (req, res) => {
   const lng = parseFloat(req.params.lng);
 
   // Delete the selected place from the user's places array
-  req.db.collection('users').updateOne(
-    {_id: req.current_user._id},
-    {$pull: {places: {lat: lat, lng: lng}}},
+  req.db.collection('users').findOneAndUpdate(
+    { _id: req.current_user._id },
+    { $pull: { places: { lat: lat, lng: lng }}},
+    { returnOriginal: false },
     (err, result) => {
       if (err) {
         res.json({error: err});
       } else {
-        res.json(req.current_user.places);
+        res.json(result.value.places);
       }
     }
   );
