@@ -204,12 +204,10 @@ router.delete('/place/:lat/:lng', auth, (req, res) => {
     { _id: req.current_user._id },
     { $pull: { places: { lat: lat, lng: lng }}},
     { returnOriginal: false },
-    (err, result) => {
-      if (err) {
-        res.json({error: err});
-      } else {
-        res.json(result.value.places);
-      }
+    (error, result) => {
+      if (error) return res.json({error: error});
+
+      res.json({status: "ok"});
     }
   );
 });
