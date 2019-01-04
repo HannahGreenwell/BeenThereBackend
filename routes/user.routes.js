@@ -157,13 +157,9 @@ router.get('/places', auth, (req, res) => {
   res.json(places);
 });
 
-// UPDATE PLACE
-router.put('/place/:lat/:lng', auth, parser.single('image'), (req, res) => {
-  // Get the place's previous lat and lng from req.params
-  const prevLat = parseFloat(req.params.lat);
-  const prevLng = parseFloat(req.params.lng);
+// UPDATE PLACE (without image)
+router.put('/place/:lat/:lng', auth, (req, res) => {
   // Get the place's new values
-  const image = req.file.url;
   const {name, category, description} = req.body;
   const lat = parseFloat(req.body.lat);
   const lng = parseFloat(req.body.lng);
@@ -171,17 +167,14 @@ router.put('/place/:lat/:lng', auth, parser.single('image'), (req, res) => {
   req.db.collection('users').findOneAndUpdate(
     {
       _id: req.current_user._id,
-      "places.lat": prevLat,
-      "places.lng": prevLng
+      "places.lat": lat,
+      "places.lng": lng
     },
     {
       $set: {
       "places.$.name": name,
       "places.$.category": category,
       "places.$.description": description,
-      "places.$.image": image,
-      "places.$.lat": lat,
-      "places.$.lng": lng
     }},
     { returnOriginal: false },
     (error, result) => {
@@ -192,6 +185,42 @@ router.put('/place/:lat/:lng', auth, parser.single('image'), (req, res) => {
     }
   );
 });
+
+// UPDATE PLACE (with image)
+// router.put('/place/:lat/:lng', auth, parser.single('image'), (req, res) => {
+//   // Get the place's previous lat and lng from req.params
+//   const prevLat = parseFloat(req.params.lat);
+//   const prevLng = parseFloat(req.params.lng);
+//   // Get the place's new values
+//   const image = req.file.url;
+//   const {name, category, description} = req.body;
+//   const lat = parseFloat(req.body.lat);
+//   const lng = parseFloat(req.body.lng);
+//
+//   req.db.collection('users').findOneAndUpdate(
+//     {
+//       _id: req.current_user._id,
+//       "places.lat": prevLat,
+//       "places.lng": prevLng
+//     },
+//     {
+//       $set: {
+//       "places.$.name": name,
+//       "places.$.category": category,
+//       "places.$.description": description,
+//       "places.$.image": image,
+//       "places.$.lat": lat,
+//       "places.$.lng": lng
+//     }},
+//     { returnOriginal: false },
+//     (error, result) => {
+//       if (error) return res.json({error: error});
+//
+//       const place = result.value.places.find(p => p.lat === lat && p.lng === lng);
+//       res.json(place);
+//     }
+//   );
+// });
 
 // DELETE PLACE
 router.delete('/place/:lat/:lng', auth, (req, res) => {
