@@ -108,21 +108,7 @@ router.post("/signin", (req, res, next) => {
 });
 
 ///// PROTECTED ROUTES
-// GET USER'S PLACES
-router.get('/map', auth, (req, res) => {
-  // Get the user's map data from req.current_user
-  let {places} = req.current_user;
-
-  // Send an empty array back to user's with no map data
-  if (!places) {
-    places = [];
-  }
-
-  // Return an array of the pins (or an empty array if the user has no pins)
-  res.json(places);
-});
-
-// CREATE A NEW PLACE
+// CREATE PLACE
 router.post('/place', auth, parser.single('image'), (req, res) => {
   // Get uploaded image url from req.file
   const image = req.file.url;
@@ -157,7 +143,57 @@ router.post('/place', auth, parser.single('image'), (req, res) => {
   );
 });
 
-// DELETE A PLACE
+// READ ALL PLACES
+router.get('/places', auth, (req, res) => {
+  // Get the user's map data from req.current_user
+  let {places} = req.current_user;
+
+  // Send an empty array back to user's with no map data
+  if (!places) {
+    places = [];
+  }
+
+  // Return an array of the pins (or an empty array if the user has no pins)
+  res.json(places);
+});
+
+// UPDATE PLACE
+router.put('/place/:lat/:lng', auth, parser.single('image'), (req, res) => {
+  // Get the place's previous lat and lng from req.params
+  const prevLat = parseFloat(req.params.lat);
+  const prevLng = parseFloat(req.params.lng);
+  // Get the place's new values
+  const image = req.file.url;
+  const {name, category, description} = req.body;
+  const lat = parseFloat(req.body.lat);
+  const lng = parseFloat(req.body.lng);
+
+  req.db.collection('users').findOneAndUpdate(
+    {
+      _id: req.current_user._id,
+      "places.lat": prevLat,
+      "places.lng": prevLng
+    },
+    {
+      $set: {
+      "places.$.name": name,
+      "places.$.category": category,
+      "places.$.description": description,
+      "places.$.image": image,
+      "places.$.lat": lat,
+      "places.$.lng": lng
+    }},
+    { returnOriginal: false },
+    (error, result) => {
+      if (error) return res.json({error: error});
+
+      const place = result.value.places.find(p => p.lat === lat && p.lng === lng);
+      res.json(place);
+    }
+  );
+});
+
+// DELETE PLACE
 router.delete('/place/:lat/:lng', auth, (req, res) => {
   // Get the selected place's lat and lng from req.params
   const lat = parseFloat(req.params.lat);

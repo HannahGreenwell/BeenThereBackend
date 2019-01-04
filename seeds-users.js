@@ -6,61 +6,51 @@
     "password": "$2b$10$k65dIBwl5ZGFYV65/qOoF.YyadbYAPZQ0htqSht/ld/zhJzFtBZVu",
     "friends": [2, 3],
 
-    "beenThereMap": [
+    "places": [
       {
-        "city": "Hong Kong",
-        "pins": [
-          {
-            "name": "Sai Yung Kee",
-            "description": "Odio nulla ac enim. Praesent augue eros, elementum a pellentesque eget, aliquet at nisi. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam aliquam suscipit ligula, ut convallis justo imperdiet rhoncus.",
-            "category": "Food & Drink",
-            "images": [
-              "http://www.image1.com",
-              "http://www.image2.com",
-              "http://www.image3.com"
-            ],
-            "lat": 22.286396,
-            "lng": 114.150486
-          },
-          {
-            "name": "Australian Dairy Company",
-            "description": "Nullam eget iaculis libero. Proin cursus eget est vel interdum. Phasellus iaculis diam mi, et sollicitudin risus mattis in. Maecenas malesuada metus id lacus ultrices, et pharetra neque ultricies.",
-            "category": "Food & Drink",
-            "images": [
-              "http://www.image4.com",
-              "http://www.image5.com",
-              "http://www.image6.com"
-            ],
-            "lat": 22.304907,
-            "lng": 114.170516
-          },
-          {
-            "name": "Lion Rock",
-            "description": "Nullam eget iaculis libero. Proin cursus eget est vel interdum. Phasellus iaculis diam mi, et sollicitudin risus mattis in. Maecenas malesuada metus id lacus ultrices, et pharetra neque ultricies.",
-            "category": "See & Do",
-            "images": [
-              "http://www.image7.com",
-              "http://www.image8.com"
-            ],
-            "lat": 22.352874,
-            "lng": 114.187067
-          }
-        ]
+        "name": "Sai Yung Kee",
+        "description": "Odio nulla ac enim. Praesent augue eros, elementum a pellentesque eget, aliquet at nisi. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam aliquam suscipit ligula, ut convallis justo imperdiet rhoncus.",
+        "category": "Food & Drink",
+        "images": [
+          "http://www.image1.com",
+          "http://www.image2.com",
+          "http://www.image3.com"
+        ],
+        "lat": 22.286396,
+        "lng": 114.150486
       },
       {
-        "city": "Taipei",
-        "pins": [
-          {
-            "name": "Caochang Bar",
-            "description": "Nullam eget iaculis libero. Proin cursus eget est vel interdum. Phasellus iaculis diam mi, et sollicitudin risus mattis in. Maecenas malesuada metus id lacus ultrices, et pharetra neque ultricies.",
-            "category": "Nightlife",
-            "images": [
-              "http://www.image9.com"
-            ],
-            "lat": 25.025641,
-            "lng": 121.541640
-          }
-        ]
+        "name": "Australian Dairy Company",
+        "description": "Nullam eget iaculis libero. Proin cursus eget est vel interdum. Phasellus iaculis diam mi, et sollicitudin risus mattis in. Maecenas malesuada metus id lacus ultrices, et pharetra neque ultricies.",
+        "category": "Food & Drink",
+        "images": [
+          "http://www.image4.com",
+          "http://www.image5.com",
+          "http://www.image6.com"
+        ],
+        "lat": 22.304907,
+        "lng": 114.170516
+      },
+      {
+        "name": "Lion Rock",
+        "description": "Nullam eget iaculis libero. Proin cursus eget est vel interdum. Phasellus iaculis diam mi, et sollicitudin risus mattis in. Maecenas malesuada metus id lacus ultrices, et pharetra neque ultricies.",
+        "category": "See & Do",
+        "images": [
+          "http://www.image7.com",
+          "http://www.image8.com"
+        ],
+        "lat": 22.352874,
+        "lng": 114.187067
+      },
+      {
+        "name": "Caochang Bar",
+        "description": "Nullam eget iaculis libero. Proin cursus eget est vel interdum. Phasellus iaculis diam mi, et sollicitudin risus mattis in. Maecenas malesuada metus id lacus ultrices, et pharetra neque ultricies.",
+        "category": "Nightlife",
+        "images": [
+          "http://www.image9.com"
+        ],
+        "lat": 25.025641,
+        "lng": 121.541640
       }
     ],
 
