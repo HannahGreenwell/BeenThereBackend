@@ -113,18 +113,19 @@ router.post('/place', auth, parser.single('image'), (req, res) => {
   // Get uploaded image url from req.file
   const image = req.file.url;
   // Get form inputs from req.body
-  const {name, category, description} = req.body;
+  const {name, address, category, description} = req.body;
   const lat = parseFloat(req.body.lat);
   const lng = parseFloat(req.body.lng);
 
   // Create a new pin object using the form input
   const newPlace = {
     name,
+    address,
     description,
     category,
     image,
     lat,
-    lng,
+    lng
   };
 
   // Update the user's document
