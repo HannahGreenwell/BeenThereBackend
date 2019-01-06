@@ -43,4 +43,4 @@ Been There is a map based app for people who are bursting with travel recommenda
 - Testing
 
 ### Screenshot
-![Been There Screenshot](./been-there-screenshot.jpeg)
+![Been There Screenshot](./been-there.jpg)
