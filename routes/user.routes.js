@@ -161,7 +161,7 @@ router.get('/places', auth, (req, res) => {
 // UPDATE PLACE (without image)
 router.put('/place/:lat/:lng', auth, (req, res) => {
   // Get the place's new values
-  const {name, category, description} = req.body;
+  const {name, address, category, description} = req.body;
   const lat = parseFloat(req.body.lat);
   const lng = parseFloat(req.body.lng);
 
@@ -174,6 +174,7 @@ router.put('/place/:lat/:lng', auth, (req, res) => {
     {
       $set: {
       "places.$.name": name,
+      "places.$.address": address,
       "places.$.category": category,
       "places.$.description": description,
     }},
