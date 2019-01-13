@@ -6,10 +6,9 @@ const cloudinaryStorage = require('multer-storage-cloudinary');
 
 const auth = require('../authorization.js');
 
-const SECRET = process.env.JWT_SECRET;
 
-// https://medium.freecodecamp.org/how-to-allow-users-to-upload-images-with-node-express-mongoose-and-cloudinary-84cefbdff1d9
 ///// CLOUDINARY SET-UP
+// https://medium.freecodecamp.org/how-to-allow-users-to-upload-images-with-node-express-mongoose-and-cloudinary-84cefbdff1d9
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -25,7 +24,7 @@ const storage = cloudinaryStorage({
 
 const parser = multer({storage: storage});
 
-///// PROTECTED ROUTES
+
 // CREATE PLACE
 router.post('/place', auth, parser.single('image'), (req, res) => {
   // Get uploaded image url from req.file

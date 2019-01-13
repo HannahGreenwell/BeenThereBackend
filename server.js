@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+
 // Allows route files to access db variable through req.db
 const mongoExpress = require('express-mongo-db');
 
